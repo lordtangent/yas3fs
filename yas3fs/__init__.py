@@ -715,13 +715,15 @@ class YAS3FS(LoggingMixIn, Operations):
         debug = options.debug
 
         # Parameters and options handling
+        # self.object_url = options.url
         self.aws_region = options.region
         s3url = urlparse.urlparse(options.s3path.lower())
-        if s3url.scheme != 's3':
-            error_and_exit("The S3 path to mount must be in URL format: s3://BUCKET/PATH")
-        self.s3_bucket_name = s3url.netloc
+        #if s3url.scheme != 's3':
+        #    error_and_exit("The S3 path to mount must be in URL format: s3://BUCKET/PATH")
+        self.s3_bucket_name = s3url.path
+        self.s3_endpoint = s3url.netloc
         logger.info("S3 bucket: '%s'" % self.s3_bucket_name)
-        self.s3_prefix = s3url.path.strip('/')
+        self.s3_prefix = ''
         logger.info("S3 prefix (can be empty): '%s'" % self.s3_prefix)
         if self.s3_bucket_name == '':
             error_and_exit("The S3 bucket cannot be empty")
@@ -851,6 +853,10 @@ class YAS3FS(LoggingMixIn, Operations):
             if options.s3_use_sigv4:
                 os.environ['S3_USE_SIGV4'] = 'True'
                 self.s3 = boto.connect_s3(host=options.s3_endpoint)
+        # Hack for getting gcs url in here
+            if options.s3_endpoint:
+                self.s3 = boto.connect_s3(host=options.s3_endpoint)
+                
             else:
                 self.s3 = boto.connect_s3()
         except boto.exception.NoAuthHandlerFound:
@@ -3056,6 +3062,8 @@ AWS_DEFAULT_REGION environment variable can be used to set the default AWS regio
                         'PATH can be empty, can contain subfolders and is created on first mount if not found in the BUCKET')
     parser.add_argument('mountpoint', metavar='LocalPath',
                         help='the local mount point')
+    parser.add_argument('--s3_endpoint', default='None',
+                        help='URL to object storage (default is %(default)s)')
     parser.add_argument('--region', default=default_aws_region,
                         help='AWS region to use for SNS and SQS (default is %(default)s)')
     parser.add_argument('--topic', metavar='ARN',
