@@ -3062,8 +3062,6 @@ AWS_DEFAULT_REGION environment variable can be used to set the default AWS regio
                         'PATH can be empty, can contain subfolders and is created on first mount if not found in the BUCKET')
     parser.add_argument('mountpoint', metavar='LocalPath',
                         help='the local mount point')
-    parser.add_argument('--s3-endpoint', default=None,
-                        help='URL to object storage (default is %(default)s)')
     parser.add_argument('--region', default=default_aws_region,
                         help='AWS region to use for SNS and SQS (default is %(default)s)')
     parser.add_argument('--topic', metavar='ARN',
